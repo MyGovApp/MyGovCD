@@ -1,0 +1,27 @@
+FROM ianlancaster/node-production
+
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY package.json /usr/src/app/
+RUN npm install
+
+# Copy in app src files
+COPY . /usr/src/app
+
+# Compile and bundle optimized /dist directory
+RUN npm run deploy:prod
+
+# Remove the default nginx index.html
+RUN rm -rf /var/www/html/index.nginx-debian.html
+
+# Copy the contents of the dist directory over to the nginx web root
+RUN mv -v /usr/src/app/dist/* /var/www/html/
+
+# Expose the public http port
+EXPOSE 80
+
+# start server
+CMD ["nginx", "-g", "daemon off;"]
